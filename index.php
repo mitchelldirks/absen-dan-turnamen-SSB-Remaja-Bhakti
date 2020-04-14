@@ -26,6 +26,29 @@
     } else {
       echo "Error : " . mysqli_error($con);
     }
+  }elseif (isset($_POST['foto'])) {
+    //if(($_POST['photo'])!=null) {
+      
+      $a=$_FILES['photo']['name'];
+
+        if (strlen($a)>0) {
+            if (is_uploaded_file($_FILES['photo']['tmp_name'])) {
+              move_uploaded_file($_FILES['photo']['tmp_name'], "./admin/assets/img/anggota/".$a);
+              //$img=",img='".$_POST['photo']."'";
+              $img=",img='".$a."'";
+            }
+          //}
+    }else{
+      $img="";
+    }
+    $query="UPDATE murid SET foto = '".$a."' where id_murid='".$_SESSION['id_user']."'";
+    $sql=mysqli_query($con,$query);
+    if ($sql) {
+      $_SESSION['edit-alert'] = 0;
+    }else{
+      // echo "<script>alert('Pengubahan data gagal!');window.location.href='index.php?p=anggota'</script>";
+      echo $query;
+    }
   }
 ?>
 <!DOCTYPE html>
@@ -50,6 +73,114 @@
   <style type="text/css">
     .input-buat-myBear{
       background: white;
+    }
+
+    .file-drop-area {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 450px;
+      max-width: 100%;
+      padding: 25px;
+      border: 1px dashed #999;
+      border-radius: 3px;
+      transition: 0.2s;
+      &.is-active {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .fake-btn {
+      flex-shrink: 0;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid #999;
+      border-radius: 3px;
+      padding: 8px 15px;
+      margin-right: 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .file-msg {
+      font-size: small;
+      font-weight: 300;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      cursor: pointer;
+      opacity: 0;
+      &:focus {
+        outline: none;
+      }
+    }
+    .submit{
+      width: 450px;
+      max-width: 100%;
+      padding: 25px;
+      border: 1px dashed #999;
+      border-radius: 3px;
+      transition: 0.2s;
+    }  
+    .submit:hover{
+        background:#aaa;
+        transition: 0.4s;
+      }
+
+    .excel{
+      background: green;
+      color: black;
+    }
+    /*.excel-title,th{
+      background: rgb(33, 115, 70);
+      color: #fff;
+    }*/
+    .cells,tr{
+      grid-template-columns: 40px repeat(11, calc((100% - 50px) / 11));
+      grid-template-rows: repeat(21, 25px);
+      grid-gap: 1px;
+      background: white;
+      grid-auto-flow: dense;
+      max-width: 100%;
+      overflow: hidden;
+      &__spacer {
+        background: $gray-dark;
+        position: relative;
+        &:after {
+          content: "";
+          position: absolute;
+          right: 4px;
+          bottom: 4px;
+          height: 80%;
+          width: 100%;
+          background: linear-gradient(
+            135deg,
+            transparent 30px,
+            #bbb 30px,
+            #bbb 55px,
+            transparent 55px
+          );
+        }
+      }
+      /*input, button {
+        border: none;
+        background: #fff;
+        padding: 0 6px;
+        font-family: 'Noto Sans', sans-serif;
+      }*/
+    }
+    .cells,tr:hover{
+      background: #999;
+    }
+    .num{
+      text-align: right;
     }
   </style>
 </head>
@@ -148,7 +279,7 @@
                 </li>
               </ul>
               <div class="tab-content tab-space">
-                <div class="tab-pane active" id="dashboard-1">
+                <div class="tab-pane fadein active " id="dashboard-1">
                   <div class="row">
                             <div class="col-md-6 col-xl-6">
                                 <div class="card mb-3 widget-content bg-midnight-bloom">
@@ -231,7 +362,7 @@
 
 
                 </div>
-                <div class="tab-pane" id="schedule-1">
+                <div class="tab-pane fade" id="schedule-1">
                     <h3>Jadwal Kegiatan SSB Remaja Bhakti</h3>
                       <div class="main-card mb-3">
                           <div class="card-body">
@@ -240,7 +371,7 @@
                           </div>
                       </div>
                 </div>
-                <div class="tab-pane" id="tasks-1">
+                <div class="tab-pane fade" id="tasks-1">
                   <div class="row">
                           <div class="col-md-6 info">
                             <div class="icon icon-primary">
@@ -300,7 +431,7 @@
                         </div>
                 </div>
 
-                <div class="tab-pane" id="profile">
+                <div class="tab-pane fade" id="profile">
                   <?php 
                   $ed=mysqli_query($con,"SELECT * from murid where id_murid='".$_SESSION["id_user"]."'");
                   $edit=mysqli_fetch_array($ed);
@@ -429,24 +560,30 @@
         </div>
 
         <div class="modal-body">
-          <center><img height="300px" width="300px" style="border-radius: 5px;" src="./admin/assets/img/anggota/<?=$edit['foto']?>" alt="Thumbnail Image" class="img-raised m-auto img-fluid"></center>
+          <center><img height="400px" width="400px" style="border-radius: 5px;" src="./admin/assets/img/anggota/<?=$edit['foto']?>" alt="Thumbnail Image" class="img-raised m-auto img-fluid"></center>
           <br>
         </div>
         <hr>
         <div class="modal-footer">
           <form role="form" method="post"  enctype="multipart/form-data">
-              <div class="form-group">
-                <h6>Form Ubah Foto <small class="text-danger">*) Kosongkan jika tidak ingin diubah</small></h6>
+              <div class="">
+                <h6>Form Ubah Foto <small class="text-danger">*) Abaikan jika tidak ingin diubah</small></h6>
                   <div class="row">
                     <div class="col-md-10">
                       <label for="exampleInputEmail1">Pas Foto <span style="color: red">* ukuran file maximum 1MB</span><small class="text-danger"> *)</small></label>
-                      <input type="file" accept="image/*" name="photo" class="form-control inputFileVisible">
-                      
+                      <!-- <input type="file" accept="image/*" name="photo" class="form-control-file"> -->
+                      <div class="file-drop-area">
+                          <span class="fake-btn">Pilih file</span>
+                          <span class="file-msg">atau seret kesini</span>
+                          <input class="file-input" type="file" name="photo" accept="images/*" multiple required>
+                        </div>
                     </div>
                   </div>
                 </div>
+                <div class="pull-right">
           <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-primary" name="foto">Simpan</button>
+                </div>
           </form>
         </div>
       
@@ -501,7 +638,36 @@
         }, 1000);
       }
     }
-  </script>
+
+
+    var $fileInput = $('.file-input');
+    var $droparea = $('.file-drop-area');
+
+    // highlight drag area
+    $fileInput.on('dragenter focus click', function() {
+      $droparea.addClass('is-active');
+    });
+
+    // back to normal state
+    $fileInput.on('dragleave blur drop', function() {
+      $droparea.removeClass('is-active');
+    });
+
+    // change inner text
+    $fileInput.on('change', function() {
+      var filesCount = $(this)[0].files.length;
+      var $textContainer = $(this).prev();
+
+      if (filesCount === 1) {
+        // if single file is selected, show file name
+        var fileName = $(this).val().split('\\').pop();
+        $textContainer.text(fileName);
+      } else {
+        // otherwise show number of files
+        $textContainer.text(filesCount + ' files selected');
+      }
+    });
+    </script>
     <?php
 function bulan($bln)
 {

@@ -22,7 +22,7 @@
     if ($query) {
 
       $_SESSION['name']   = $nama;
-      $_SESSION['edit-alert'] = 0;
+      $_SESSION['edit-alert'] = 0; 
     } else {
       echo "Error : " . mysqli_error($con);
     }
